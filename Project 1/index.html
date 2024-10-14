@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project 1</title>
+    <link rel="stylesheet" href="css/style.css"> <!-- Link to CSS file if needed -->
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+
+            /* Background Image */
+            background-image: url('assets/background.png'); /* Path to your background image */
+            background-size: cover; /* Ensures the image covers the entire viewport */
+            background-position: center; /* Center the background image */
+            background-repeat: no-repeat; /* Do not repeat the image */
+        }
+
+        .profile-container {
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* Style for circular profile image */
+        .profile-container img {
+            width: 100px; /* Profile image width */
+            height: 100px; /* Profile image height */
+            border-radius: 50%; /* Makes the image circular */
+            object-fit: cover; /* Ensures the image fits within the circle */
+            margin-bottom: 15px; /* Space between image and username */
+            border: 2px solid white; /* Optional: adds a white border around the image */
+        }
+
+        .profile-container h1 {
+            font-size: 24px;
+            margin: 10px 0;
+            color: rgb(0, 0, 0); /* Make text readable over the background */
+        }
+
+        .balance {
+            font-size: 36px; /* Increase the font size */
+            margin-bottom: 20px;
+            color: rgb(0, 0, 0); /* Keep the text readable */
+            font-weight: bold; /* Make the text bold */
+        }
+
+
+        /* Farming container styles */
+        .farming-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .menu-container {
+            background-color: rgb(0, 0, 0); /* Dark background for the menu */
+            padding: 10px 0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .menu-container a {
+            color: white;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .menu-container img {
+            width: 30px; /* Icon size */
+            margin-bottom: 5px;
+        }
+
+        .menu-container span {
+            display: block;
+            font-size: 12px; /* Text size for menu items */
+        }
+
+        /* Timer Container */
+        .timer-container {
+            display: inline-block;
+            padding: 20px 20px;
+            background-color: white; /* Default background color */
+            border: 2px solid black; /* Bordered black just like the image */
+            border-radius: 25px; /* Rounded corners */
+            color: black; /* Text color */
+            font-size: 18px; /* Adjust font size */
+            font-weight: bold;
+            margin-top: 10px;
+            min-width: 200px;
+            text-align: center;
+            cursor: pointer; /* Makes it clickable */
+            transition: background-color 0.3s ease; /* Smooth color change */
+        }
+
+        /* Green background when it's in "Start Farming" or "Claim Points" mode */
+        .timer-container.active {
+            background-color: #28a745; /* Green color */
+            color: white; /* Change text color to white when active */
+        }
+
+        .timer-container p {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Profile Section -->
+    <div class="profile-container">
+        <!-- Circular Profile Image -->
+        <img src="assets/profile-picture.png" alt="Profile Image"> <!-- Path to profile picture -->
+        <h1 id="profile-username"><strong>User</strong></h1> <!-- Only the username will be displayed -->
+        <div class="balance">$SKY <span id="user-balance">80.00</span></div> <!-- Placeholder for balance -->
+    </div>
+
+    <!-- Farming Container -->
+    <div class="farming-container">
+        <div id="timer-container" class="timer-container" onclick="handleFarmingAction()">
+            <p id="timer"></p> <!-- Timer will update here -->
+        </div>
+    </div>
+
+    <!-- Bottom Navigation Menu -->
+    <div class="menu-container">
+        <a href="index.html">
+            <img src="assets/home.png" alt="Home">
+            <span>Home</span>
+        </a>
+        <a href="earn.html">
+            <img src="assets/earn.png" alt="Earn">
+            <span>Earn</span>
+        </a>
+        <a href="frens.html">
+            <img src="assets/frens.png" alt="Frens">
+            <span>Frens</span>
+        </a>
+        <a href="wallet.html">
+            <img src="assets/wallet.png" alt="Wallet">
+            <span>Wallet</span>
+        </a>
+    </div>
+
+    <!-- JavaScript to load username, farming, and balance -->
+    <script>
+        // Check if username exists in localStorage
+        const username = localStorage.getItem('username');
+        const userBalance = localStorage.getItem('balance') || 80;
+        const startTime = localStorage.getItem('farmingStartTime');
+        const farmingDuration = 8 * 60 * 60 * 1000; // 8 hours in milliseconds
+
+        // Update balance and username on page load
+        document.getElementById('user-balance').textContent = userBalance;
+        if (username) {
+            document.getElementById('profile-username').textContent = username; // Only show username
+        } else {
+            document.getElementById('profile-username').textContent = 'Guest';
+        }
+
+        // Handle click action on the timer container
+        function handleFarmingAction() {
+            const timerContainer = document.getElementById('timer-container');
+            const startTime = localStorage.getItem('farmingStartTime');
+
+            if (!startTime) {
+                // Start farming
+                startFarming();
+            } else {
+                const elapsedTime = new Date().getTime() - startTime;
+                if (elapsedTime >= farmingDuration) {
+                    // Claim points
+                    claimPoints();
+                }
+            }
+        }
+
+        // Start farming function
+        function startFarming() {
+            const now = new Date().getTime();
+            localStorage.setItem('farmingStartTime', now);
+            updateFarmingStatus();
+        }
+
+        // Claim points function
+        function claimPoints() {
+            let balance = parseFloat(localStorage.getItem('balance')) || 0;
+            balance += 80; // Add 80 points
+            localStorage.setItem('balance', balance);
+            document.getElementById('user-balance').textContent = balance.toFixed(2);
+
+            // Reset farming
+            localStorage.removeItem('farmingStartTime');
+            updateFarmingStatus();
+        }
+
+        // Update farming status every second
+        function updateFarmingStatus() {
+            const now = new Date().getTime();
+            const startTime = localStorage.getItem('farmingStartTime');
+            const timerContainer = document.getElementById('timer-container');
+            const timerText = document.getElementById('timer');
+
+            if (startTime) {
+                const elapsedTime = now - startTime;
+
+                if (elapsedTime >= farmingDuration) {
+                    // Farming period complete
+                    timerText.textContent = 'Claim 80 Points';
+                    timerContainer.classList.add('active'); // Change background to green
+                } else {
+                    // Update timer countdown
+                    const remainingTime = farmingDuration - elapsedTime;
+                    const hours = Math.floor((remainingTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
+
+                    timerText.textContent = `Time left: ${hours}h ${minutes}m ${seconds}s`;
+                    timerContainer.classList.remove('active'); // Keep background white
+                }
+            } else {
+                // Ready to start farming
+                timerText.textContent = 'Start Farming';
+                timerContainer.classList.add('active'); // Change background to green
+            }
+        }
+
+        // Run the updateFarmingStatus function every second
+        setInterval(updateFarmingStatus, 1000);
+    </script>
+
+</body>
+</html>
